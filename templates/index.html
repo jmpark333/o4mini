@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="ko"><head>
+  <meta charset="UTF-8"><title>o4‑mini 툴 통합 데모</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head><body>
+  <h1>o4‑mini 툴 통합 데모</h1>
+
+  <section>
+    <h2>1. 웹 검색</h2>
+    <input id="q" placeholder="검색어"><button onclick="doSearch()">검색</button>
+    <pre id="search-result"></pre>
+  </section>
+
+  <section>
+    <h2>2. 파일 분석</h2>
+    <input type="file" id="file"><button onclick="analyzeFile()">분석</button>
+    <pre id="file-summary"></pre>
+  </section>
+
+  <section>
+    <h2>3. 이미지 분석</h2>
+    <input type="file" accept="image/*" id="imgfile"><button onclick="analyzeImage()">분석</button>
+    <p id="img-desc"></p>
+  </section>
+
+  <section>
+    <h2>4. 이미지 생성</h2>
+    <input id="prompt" placeholder="프롬프트"><button onclick="genImg()">생성</button>
+    <img id="gen-result" alt="generated image"/>
+  </section>
+
+<script>
+async function doSearch(){
+  const res = await fetch("/search", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({query:document.getElementById("q").value})
+  }).then(r=>r.json());
+  document.getElementById("search-result").innerText = JSON.stringify(res,null,2);
+}
+async function analyzeFile(){
+  const f=document.getElementById("file").files[0];
+  const fd=new FormData(); fd.append("file",f);
+  const res=await fetch("/file-analyze",{method:"POST",body:fd}).then(r=>r.json());
+  document.getElementById("file-summary").innerText = res.summary;
+}
+async function analyzeImage(){
+  const f=document.getElementById("imgfile").files[0];
+  const fd=new FormData(); fd.append("image",f);
+  const res=await fetch("/image-analyze",{method:"POST",body:fd}).then(r=>r.json());
+  document.getElementById("img-desc").innerText = res.desc;
+}
+async function genImg(){
+  const res=await fetch("/generate",{
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({prompt:document.getElementById("prompt").value})
+  }).then(r=>r.json());
+  document.getElementById("gen-result").src = res.url;
+}
+</script>
+</body></html>
